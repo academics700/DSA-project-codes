@@ -1,0 +1,77 @@
+for { set a 1}  {$a < 100001} {incr a} {
+	statistic chi
+	data 1:1 fake-test-no-redge-$a.fak
+
+	backgrnd 1 fake-test-no-redge-${a}_bkg.fak
+	ignore 1:1-3,25-81
+
+	method leven 10 0.01
+	abund angr
+	xsect vern
+	cosmo 70 0 0.73
+	xset delta 0.01
+	systematic 0.015
+	model  TBabs(bbody + redge + nthComp)
+		1.42732     -0.001          0          0     100000      1e+06
+		 1.1977       0.01     0.0001       0.01        100        200
+	       0.197806       0.01          0          0      1e+20      1e+24
+		8.12477      0.001      0.001      0.001        100        100
+		1.11457      0.001      0.001      0.001        100        100
+	      0.0143397       0.01          0          0      1e+20      1e+24
+		1.85336       0.01        1.1        1.6          3          4
+		   1000       -0.1          1          5       1000       1000
+	= p2
+		      1         -1          0          0          1          1
+		      0      -0.01     -0.999     -0.999         10         10
+	       0.038945       0.01          0          0      1e+20      1e+24
+	bayes off
+	freeze 1 8 10 11
+	query yes
+	fit
+	tclout stat
+	scan $xspec_tclout "%f" chistat_2
+	tclout dof
+	scan $xspec_tclout "%f" dof_2
+	echo $chistat_2
+	clear model
+	
+	statistic chi
+	data 1:1 fake-test-no-redge-$a.fak
+	backgrnd 1 fake-test-no-redge-${a}_bkg.fak
+	ignore 1:1-3,25-81
+
+	method leven 10 0.01
+	abund angr
+	xsect vern
+	cosmo 70 0 0.73
+	xset delta 0.01
+	systematic 0.015
+	model  TBabs(bbody + nthComp)
+		1.42732     -0.001          0          0     100000      1e+06
+		 1.1977      -0.01     0.0001       0.01        100        200
+	       0.205844       0.01          0          0      1e+20      1e+24
+		1.85336      -0.01        1.1        1.6          3          4
+		   1000       -0.1          1          5       1000       1000
+	= p2
+		      1         -1          0          0          1          1
+		      0      -0.01     -0.999     -0.999         10         10
+	       0.043089       0.01          0          0      1e+20      1e+24
+	bayes off
+	thaw 2 4 
+	freeze 1 5 7 8
+	query yes
+	fit
+	tclout stat
+	scan $xspec_tclout "%f" chistat_1
+	tclout dof
+	scan $xspec_tclout "%f" dof_1
+	echo $chistat_1
+	model clear
+	
+	set num1 [expr $chistat_2 - $chistat_1]
+	set den1 [expr $dof_2 - $dof_1]
+	set num [expr $num1 * $dof_2]
+	set den [expr $den1 * $chistat_2]
+	set res [expr $num / $den]
+	echo $res >> f_statistic.txt
+}
